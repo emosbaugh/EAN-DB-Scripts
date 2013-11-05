@@ -1,4 +1,5 @@
 Requirements
 ------------
-- Mysql
-- Wget
+- wget
+- unzip
+- database client MySQL
