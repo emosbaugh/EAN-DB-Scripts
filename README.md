@@ -1,0 +1,4 @@
+Requirements
+------------
+- Mysql
+- Wget

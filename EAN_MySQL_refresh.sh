@@ -13,18 +13,18 @@
 STARTTIME=$(date +%s)
 ## for Linux: CHKSUM_CMD=md5sum
 ## cksum should be available in all Unix versions
-CHKSUM_CMD=md5sum
-MYSQL_DIR=/usr/bin/
+CHKSUM_CMD='md5 -r'
+MYSQL_DIR=/usr/local/bin/
 # for simplicity I added the MYSQL bin path to the Windows 
 # path environment variable, for Windows set it to ""
 #MYSQL_DIR=""
 #MySQL user, password, host (Server)
-MYSQL_USER=eanuser
-MYSQL_PASS=Passw@rd1
+MYSQL_USER=root
+MYSQL_PASS=root
 MYSQL_HOST=localhost
 MYSQL_DB=eanprod
 # home directory of the user (in our case "eanuser")
-HOME_DIR=/home/eanuser
+HOME_DIR=.
 # protocol TCP All, SOCKET Unix only, PIPE Windows only, MEMORY Windows only
 MYSQL_PROTOCOL=SOCKET
 # 3336 as default,MAC using MAMP is 8889
@@ -126,34 +126,34 @@ CMD_MYSQL="${MYSQL_DIR}mysql  --local-infile=1 --default-character-set=utf8 --pr
 echo "Downloading files using wget..."
 for FILE in ${FILES[@]}
 do
-	### Download Data ###
+  ### Download Data ###
     ## capture the current file checksum
-	if [ -e ${FILE}.zip ]; then
-		echo "File exist $FILE.zip..."
-    	CHKSUM_PREV=`$CHKSUM_CMD $FILE.zip | cut -f1 -d' '`
+  if [ -e ${FILE}.zip ]; then
+    echo "File exist $FILE.zip..."
+      CHKSUM_PREV=`$CHKSUM_CMD $FILE.zip | cut -f1 -d' '`
     else
-    	CHKSUM_PREV=0   
-	fi
+      CHKSUM_PREV=0   
+  fi
     ## download the files via HTTP (no need for https), using time-stamping, -nd no host directories
     wget  -t 30 --no-verbose -r -N -nd http://www.ian.com/affiliatecenter/include/V2/$FILE.zip
     CHKSUM_NOW=`$CHKSUM_CMD $FILE.zip | cut -f1 -d' '`
     ## check if we need to update or not based on file changed
     if [ "$CHKSUM_PREV" != "$CHKSUM_NOW" ]; then
-    	echo "Update, checksum change ($CHKSUM_PREV) to ($CHKSUM_NOW) on file ($FILE.zip)..."
-    	## unzip the files
-    	unzip -L `find -iname $FILE.zip`
-    	## rename files to CamelCase format
-    	mv `echo $FILE | tr \[A-Z\] \[a-z\]`.txt $FILE.txt
+      echo "Update, checksum change ($CHKSUM_PREV) to ($CHKSUM_NOW) on file ($FILE.zip)..."
+      ## unzip the files
+      unzip -L `find . -iname $FILE.zip`
+      ## rename files to CamelCase format
+      mv `echo $FILE | tr \[A-Z\] \[a-z\]`.txt $FILE.txt
 
-   		### Update MySQL Data ###
-   		## table name are lowercase
-   		tablename=`echo $FILE | tr "[[:upper:]]" "[[:lower:]]"`
-   		echo "Uploading ($FILE) to ($MYSQL_DB.$tablename) with REPLACE option..."
-   		## let's try with the REPLACE OPTION
-   		$CMD_MYSQL --execute="LOAD DATA LOCAL INFILE '$FILE.txt' REPLACE INTO TABLE $tablename CHARACTER SET utf8 FIELDS TERMINATED BY '|' IGNORE 1 LINES;"
-   		## we need to erase the records, NOT updated today
-   		echo "erasing old records from ($tablename)..."
-   		$CMD_MYSQL --execute="DELETE FROM $tablename WHERE datediff(TimeStamp, now()) < 0;"
+      ### Update MySQL Data ###
+      ## table name are lowercase
+      tablename=`echo $FILE | tr "[[:upper:]]" "[[:lower:]]"`
+      echo "Uploading ($FILE) to ($MYSQL_DB.$tablename) with REPLACE option..."
+      ## let's try with the REPLACE OPTION
+      $CMD_MYSQL --execute="LOAD DATA LOCAL INFILE '$FILE.txt' REPLACE INTO TABLE $tablename CHARACTER SET utf8 FIELDS TERMINATED BY '|' IGNORE 1 LINES;"
+      ## we need to erase the records, NOT updated today
+      echo "erasing old records from ($tablename)..."
+      $CMD_MYSQL --execute="DELETE FROM $tablename WHERE datediff(TimeStamp, now()) < 0;"
     fi
 done
 echo "Updates done."

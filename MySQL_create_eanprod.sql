@@ -8,14 +8,14 @@
 ## platforms the same.                                ##
 ########################################################
 
-DROP DATABASE IF EXISTS eanprod;
+## DROP DATABASE IF EXISTS eanprod;
 ## specify utf8 / ut8_unicode_ci to manage all languages properly
 ## updated from files contain those characters
-CREATE DATABASE eanprod CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+## CREATE DATABASE eanprod CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
 ## users permisions
-GRANT ALL ON eanprod.* TO 'eanuser'@'%' IDENTIFIED BY 'Passw@rd1';
-GRANT ALL ON eanprod.* TO 'eanuser'@'localhost' IDENTIFIED BY 'Passw@rd1';
+## GRANT ALL ON eanprod.* TO 'eanuser'@'%' IDENTIFIED BY 'Passw@rd1';
+## GRANT ALL ON eanprod.* TO 'eanuser'@'localhost' IDENTIFIED BY 'Passw@rd1';
 
 ## REQUIRED IN WINDOWS as we do not use STRICT_TRANS_TABLE for the upload process
 SET @@global.sql_mode= '';
@@ -104,7 +104,7 @@ CREATE TABLE countrylist
 (
 	CountryID INT NOT NULL,
 	LanguageCode VARCHAR(5),
-	CountryName VARCHAR(256),
+	CountryName VARCHAR(255),
 	CountryCode VARCHAR(2) NOT NULL,
 	Transliteration VARCHAR(256),
 	ContinentID INT,
